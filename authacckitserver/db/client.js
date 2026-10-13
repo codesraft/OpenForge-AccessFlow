@@ -22,7 +22,7 @@ export function connectToDatabase() {
       return client.db();
     })
     .catch((error) => {
-      // If the connection fails, we reset the connecting variable so that
+      // If the connection fails, we reset the connecting variable so that future attempts can be made.
       connecting = null;
       throw error;
     });
