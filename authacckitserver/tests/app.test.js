@@ -28,3 +28,24 @@ describe('CORS', () => {
     expect(res.headers['access-control-allow-origin']).not.toBe('https://evil.example');
   });
 });
+
+describe('error handling', () => {
+  it('returns the standard error format for unknown routes', async () => {
+    const res = await request(app).get('/api/does-not-exist');
+
+    expect(res.status).toBe(404);
+    expect(res.body).toEqual({
+      error: { code: 'NOT_FOUND', message: 'The requested resource was not found.' },
+    });
+  });
+
+  it('returns 400 for a malformed JSON body', async () => {
+    const res = await request(app)
+      .post('/api/health')
+      .set('Content-Type', 'application/json')
+      .send('{ not json');
+
+    expect(res.status).toBe(400);
+    expect(res.body.error.code).toBe('INVALID_JSON');
+  });
+});
