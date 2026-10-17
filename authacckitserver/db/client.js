@@ -1,12 +1,13 @@
 import { MongoClient } from 'mongodb';
 import { env } from '../utils/env.js';
 
-// This module manages the MongoDB client connection. It ensures that only one connection is established and reused across the application. The `connectToDatabase` function connects to the database, `getDb` retrieves the database instance, and `closeDatabase` closes the connection when it's no longer needed.
+// The MongoClient instance is created once and reused for all database operations. This avoids the overhead of creating a new connection for each request, which can be expensive and lead to resource exhaustion.
 let client = null;
+
+// A promise that resolves when the connection is established, or rejects if it fails.
 let connecting = null;
 
 export function connectToDatabase() {
-  // Calling this twice (or at the same time) reuses the same connection.
   if (connecting) return connecting;
 
   if (!env.databaseUrl) {
@@ -22,7 +23,7 @@ export function connectToDatabase() {
       return client.db();
     })
     .catch((error) => {
-      // If the connection fails, we reset the connecting variable so that future attempts can be made.
+      // Clear the failed attempt so a later call can try again.
       connecting = null;
       throw error;
     });

@@ -2,19 +2,20 @@ import express from 'express';
 import cors from 'cors';
 import { env } from './utils/env.js';
 import healthRoutes from './routes/health.routes.js';
-import { notFoundHandler, errorHandler } from './middleware/errorHandler.js';
+import { notFoundHandler, errorHandler } from './middleware/error-handler.js';
 
-// This module sets up the Express application, including middleware for CORS, JSON parsing, and routing. It also includes error handling middleware to catch and respond to errors in a consistent manner. The `createApp` function returns the configured Express app instance, which can be used to start the server or for testing purposes.
+// The app is built separately from starting the server, so tests can use it without a port.
 export function createApp() {
   const app = express();
 
-  // CORS configuration to allow requests from the client URL and include credentials (cookies) in cross-origin requests.
+  // Only our own frontend may call the API from a browser, and `credentials`
+  // lets the browser send the session cookie with those requests.
   app.use(cors({ origin: env.clientUrl, credentials: true }));
   app.use(express.json());
 
   app.use('/api', healthRoutes);
 
-  // Error handling middleware must be added after all other routes and middleware.
+  // These must stay last: they only handle what the routes above did not.
   app.use(notFoundHandler);
   app.use(errorHandler);
 

@@ -1,21 +1,22 @@
 import { createApp } from './app.js';
 import { env } from './utils/env.js';
 import { connectToDatabase, closeDatabase } from './db/client.js';
+import { logger } from './utils/logger.js';
 
 async function start() {
   try {
     await connectToDatabase();
-    console.log('Connected to MongoDB');
   } catch (error) {
-    console.error('Could not connect to MongoDB:', error.message);
+    // Running without a database would fail on every request, so stop right away.
+    logger.error('Could not connect to MongoDB:', error.message);
     process.exit(1);
   }
 
   const server = createApp().listen(env.port, () => {
-    console.log(`AuthAccKit server running on port ${env.port}`);
+    logger.info(`AuthAccKit server running on port ${env.port}`);
   });
 
-  // Close the server and the database cleanly when the process is stopped.
+  // Finish in-flight requests and release the database connection before exiting.
   const shutdown = () => {
     server.close(async () => {
       await closeDatabase();
