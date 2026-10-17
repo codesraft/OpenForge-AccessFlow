@@ -1,18 +1,24 @@
+import { mongodbAdapter } from 'better-auth/adapters/mongodb';
 import { createApp } from './app.js';
+import { createAuth } from './auth/auth.js';
 import { env } from './utils/env.js';
 import { connectToDatabase, closeDatabase } from './db/client.js';
+import { ensureIndexes } from './db/indexes.js';
 import { logger } from './utils/logger.js';
 
 async function start() {
+  let auth;
   try {
-    await connectToDatabase();
+    const db = await connectToDatabase();
+    await ensureIndexes(db);
+    auth = createAuth(mongodbAdapter(db));
   } catch (error) {
-    // Running without a database would fail on every request, so stop right away.
-    logger.error('Could not connect to MongoDB:', error.message);
+    // Without the database or auth config every request would fail, so stop right away.
+    logger.error('Could not start the server:', error.message);
     process.exit(1);
   }
 
-  const server = createApp().listen(env.port, () => {
+  const server = createApp({ auth }).listen(env.port, () => {
     logger.info(`AuthAccKit server running on port ${env.port}`);
   });
 

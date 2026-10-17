@@ -9,4 +9,8 @@ export const env = {
   port: Number(process.env.PORT) || DEFAULT_PORT,
   clientUrl: process.env.CLIENT_URL || DEFAULT_CLIENT_URL,
   databaseUrl: process.env.DATABASE_URL,
+  authSecret: process.env.BETTER_AUTH_SECRET,
+  smtpUrl: process.env.SMTP_URL,
+  emailFrom: process.env.EMAIL_FROM,
+  authUrl: process.env.BETTER_AUTH_URL || `http://localhost:${DEFAULT_PORT}`,
 };
