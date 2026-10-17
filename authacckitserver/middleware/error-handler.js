@@ -1,0 +1,28 @@
+import { AppError } from '../utils/app-error.js';
+import { logger } from '../utils/logger.js';
+
+// Every error leaves the API in the same shape, so the client only has one format to handle.
+function sendError(res, status, code, message) {
+  res.status(status).json({ error: { code, message } });
+}
+
+export function notFoundHandler(req, res) {
+  sendError(res, 404, 'NOT_FOUND', 'The requested resource was not found.');
+}
+
+// Express only treats a function as an error handler if it declares all four arguments,
+// so `_next` has to stay even though it is never used.
+export function errorHandler(err, req, res, _next) {
+  if (err instanceof AppError) {
+    return sendError(res, err.status, err.code, err.message);
+  }
+
+  // express.json() throws this for a broken body, which is the client's mistake, not ours.
+  if (err.type === 'entity.parse.failed') {
+    return sendError(res, 400, 'INVALID_JSON', 'The request body is not valid JSON.');
+  }
+
+  // Unexpected errors may contain internal details, so they go to the log, never to the client.
+  logger.error('Unhandled error:', err);
+  sendError(res, 500, 'INTERNAL_ERROR', 'Something went wrong. Please try again.');
+}
