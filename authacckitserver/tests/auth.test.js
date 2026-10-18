@@ -16,7 +16,10 @@ vi.mock('../utils/env.js', () => ({
   },
 }));
 
-vi.mock('../services/email.service.js', () => ({ sendVerificationEmail: vi.fn() }));
+vi.mock('../services/email.service.js', () => ({
+  sendVerificationEmail: vi.fn(),
+  sendPasswordResetEmail: vi.fn(),
+}));
 
 const newUser = { name: 'Test User', email: 'test@example.com', password: 'a-strong-password-1' };
 

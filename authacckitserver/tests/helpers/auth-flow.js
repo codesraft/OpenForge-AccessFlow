@@ -5,7 +5,7 @@ import { createAuth } from '../../auth/auth.js';
 import { sendVerificationEmail } from '../../services/email.service.js';
 import { env } from '../../utils/env.js';
 
-const PASSWORD = 'a-strong-password-1';
+export const PASSWORD = 'a-strong-password-1';
 
 // Mocks the environment variables used by the auth middleware. This is necessary because the auth middleware reads these variables when it is created, and we want to control their values for testing.
 export function createAuthTestApp() {
@@ -13,11 +13,11 @@ export function createAuthTestApp() {
   return createApp({ auth });
 }
 
-export async function signIn(app, email) {
+export async function signIn(app, email, password = PASSWORD) {
   const res = await request(app)
     .post('/api/auth/sign-in/email')
     .set('Origin', env.clientUrl)
-    .send({ email, password: PASSWORD });
+    .send({ email, password });
 
   return res.headers['set-cookie'];
 }

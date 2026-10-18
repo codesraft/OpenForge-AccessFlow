@@ -1,37 +1,21 @@
-import express from 'express';
-import { toNodeHandler } from 'better-auth/node';
-import cors from 'cors';
-import { env } from './utils/env.js';
-import healthRoutes from './routes/health.routes.js';
-import { createProfileRoutes } from './routes/profile.routes.js';
-import { createAccountRoutes } from './routes/account.routes.js';
-import { notFoundHandler, errorHandler } from './middleware/error-handler.js';
+// This file contains a helper function to create a fake profiles collection for testing purposes. The collection is implemented as an in-memory Map, and provides methods to delete a profile and find and update a profile. The findOneAndUpdate method supports upserting a new profile if it does not exist, and updating an existing profile with new data.
+export function createFakeProfilesCollection() {
+  const documents = new Map();
 
-// The app is built separately from starting the server, so tests can use it without a port.
-export function createApp({ auth } = {}) {
-  const app = express();
+  return {
+    documents,
+    deleteOne: async ({ userId }) => ({ deletedCount: documents.delete(userId) ? 1 : 0 }),
+    findOneAndUpdate: async ({ userId }, update, { upsert = false } = {}) => {
+      let document = documents.get(userId);
 
-  // CORS is needed because the client and server are on different ports in development. The client sends credentials (cookies) to the server, so the server must allow that.
-  app.use(cors({ origin: env.clientUrl, credentials: true }));
-
-  // The auth middleware is optional, so the server can run without it for testing or development. If auth is provided, it handles all /api/auth/* routes and provides req.user to the profile and account routes.
-  if (auth) {
-    app.all('/api/auth/{*splat}', toNodeHandler(auth));
-  }
-
-  app.use(express.json());
-
-  app.use('/api', healthRoutes);
-
-  // These routes need to know who is logged in, so they only exist when auth is available.
-  if (auth) {
-    app.use('/api/profile', createProfileRoutes(auth));
-    app.use('/api/account', createAccountRoutes(auth));
-  }
-
-  // These must stay last: they only handle what the routes above did not.
-  app.use(notFoundHandler);
-  app.use(errorHandler);
-
-  return app;
+      if (!document && upsert) {
+        document = { userId, ...update.$setOnInsert };
+        documents.set(userId, document);
+      }
+      if (document && update.$set) {
+        Object.assign(document, update.$set);
+      }
+      return document ?? null;
+    },
+  };
 }

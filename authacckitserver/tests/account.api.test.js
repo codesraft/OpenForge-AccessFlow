@@ -12,7 +12,10 @@ vi.mock('../utils/env.js', () => ({
     authSecret: 'a-test-secret-that-is-long-enough-for-better-auth',
   },
 }));
-vi.mock('../services/email.service.js', () => ({ sendVerificationEmail: vi.fn() }));
+vi.mock('../services/email.service.js', () => ({
+  sendVerificationEmail: vi.fn(),
+  sendPasswordResetEmail: vi.fn(),
+}));
 vi.mock('../db/collections.js', () => ({
   COLLECTION_NAMES: { profiles: 'profiles', sessions: 'session', accounts: 'account' },
   getProfilesCollection: vi.fn(),

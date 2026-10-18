@@ -1,19 +1,20 @@
 import { betterAuth } from 'better-auth';
 import { env } from '../utils/env.js';
-import { sendVerificationEmail } from '../services/email.service.js';
+import { sendVerificationEmail, sendPasswordResetEmail } from '../services/email.service.js';
 import { sessionOwnershipGuard } from './session-ownership.js';
 
-// Where the browser lands after clicking the link in the verification email.
+// Where the browser lands after clicking the link in an email.
 const EMAIL_VERIFIED_REDIRECT = '/login';
+const PASSWORD_RESET_REDIRECT = '/reset-password';
 
-// The link is valid for one hour and Better Auth only accepts it once.
-const VERIFICATION_LINK_LIFETIME_SECONDS = 60 * 60;
+// Both links are valid for one hour, and Better Auth only accepts each of them once.
+const EMAIL_LINK_LIFETIME_SECONDS = 60 * 60;
 
-// The verification email is sent to the user with a callbackURL that points to the client. This function rewrites the callbackURL to point to the client instead of the server.
-function withClientRedirect(url) {
+// Creates a URL that redirects the user to the client, which then redirects back to the server to complete the email verification or password reset. The client URL is used as the base, and the callbackURL query parameter is set to the target path. If the callbackURL is missing or set to "/", it is replaced with the default path for that type of link.
+function withClientRedirect(url, defaultPath) {
   const link = new URL(url);
   const callback = link.searchParams.get('callbackURL');
-  const target = !callback || callback === '/' ? EMAIL_VERIFIED_REDIRECT : callback;
+  const target = !callback || callback === '/' ? defaultPath : callback;
 
   link.searchParams.set(
     'callbackURL',
@@ -22,7 +23,7 @@ function withClientRedirect(url) {
   return link.toString();
 }
 
-// The auth middleware is optional, so the server can run without it for testing or development.
+// Creates the auth object that is used by the server. It uses the environment variables to configure the auth middleware, and sets up the email and password authentication and email verification. The auth object is created with a database adapter, which can be an in-memory adapter for testing or a real database adapter for production. The auth object is used by the controllers to handle authentication-related requests.
 export function createAuth(database) {
   if (!env.authSecret) {
     throw new Error('BETTER_AUTH_SECRET is not set');
@@ -39,13 +40,26 @@ export function createAuth(database) {
       enabled: true,
       // Nobody can log in until they have confirmed their email address.
       requireEmailVerification: true,
+      resetPasswordTokenExpiresIn: EMAIL_LINK_LIFETIME_SECONDS,
+      // A reset usually means the password may have been exposed, so every device is logged out.
+      revokeSessionsOnPasswordReset: true,
+      sendResetPassword: ({ user, url }) =>
+        sendPasswordResetEmail({
+          to: user.email,
+          name: user.name,
+          url: withClientRedirect(url, PASSWORD_RESET_REDIRECT),
+        }),
     },
     emailVerification: {
       sendOnSignUp: true,
-      expiresIn: VERIFICATION_LINK_LIFETIME_SECONDS,
-      // The email verification link is sent to the user with a callbackURL that points to the client.
+      expiresIn: EMAIL_LINK_LIFETIME_SECONDS,
+      // The user is not logged in yet, so the link must take them to the client, which will then redirect to the server to complete the verification.
       sendVerificationEmail: ({ user, url }) =>
-        sendVerificationEmail({ to: user.email, name: user.name, url: withClientRedirect(url) }),
+        sendVerificationEmail({
+          to: user.email,
+          name: user.name,
+          url: withClientRedirect(url, EMAIL_VERIFIED_REDIRECT),
+        }),
     },
   });
 }
