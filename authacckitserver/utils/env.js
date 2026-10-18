@@ -25,6 +25,7 @@ export const env = {
   emailFrom: process.env.EMAIL_FROM,
   authUrl: process.env.BETTER_AUTH_URL || `http://localhost:${DEFAULT_PORT}`,
   isProduction,
-  // The cookie SameSite setting is "none" in production, which allows the browser to send the cookie across origins. In development, it is "lax", which allows the cookie to be sent on same-site requests and top-level navigation GET requests.
+  imgbbApiKey: process.env.IMGBB_API_KEY,
+  // The cookieSameSite setting determines how cookies are sent with cross-site requests. In production, it defaults to "none" to allow cross-site requests, while in development it defaults to "lax" to provide some protection against cross-site request forgery (CSRF) attacks. The value is converted to lowercase to ensure consistency when used in the application.
   cookieSameSite: (process.env.COOKIE_SAME_SITE || (isProduction ? 'none' : 'lax')).toLowerCase(),
 };

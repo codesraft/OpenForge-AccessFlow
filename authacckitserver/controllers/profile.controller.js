@@ -4,8 +4,12 @@ import {
   updateProfile,
   toProfileResponse,
 } from '../services/profile.service.js';
+import { uploadAvatarImage } from '../services/avatar.service.js';
+import { detectImageType } from '../utils/image-type.js';
+import { AppError } from '../utils/app-error.js';
 
-// This controller handles requests to get and update the user's profile. It uses the auth object to update the user's name in Better Auth, and the profile service to get and update the profile in the database. The profile is created on demand when the user first logs in, so it is guaranteed to exist after this function resolves. The profile is not created until the user logs in, so it is not possible to create a profile for a user that has never logged in.
+// Every handler works on req.user, which requireAuth took from the session. There is no
+// user id in the URL or body, so a user cannot ask for anyone else's profile.
 export function createProfileController(auth) {
   async function getProfile(req, res) {
     const profile = await getOrCreateProfile(req.user.id);
@@ -28,5 +32,23 @@ export function createProfileController(auth) {
     res.json(toProfileResponse(user, profile));
   }
 
-  return { getProfile, updateProfile: updateOwnProfile };
+  async function uploadOwnAvatar(req, res) {
+    if (!req.file) {
+      throw new AppError(400, 'VALIDATION_ERROR', 'Choose an image to upload.', {
+        avatar: 'An image is required.',
+      });
+    }
+
+    // The type is checked from the file's own bytes, not from the name or type the client claims.
+    if (!detectImageType(req.file.buffer)) {
+      throw new AppError(400, 'INVALID_FILE_TYPE', 'Only JPEG, PNG or WebP images are allowed.');
+    }
+
+    const avatarUrl = await uploadAvatarImage(req.file.buffer);
+    const profile = await updateProfile(req.user.id, { avatarUrl });
+
+    res.json(toProfileResponse(req.user, profile));
+  }
+
+  return { getProfile, updateProfile: updateOwnProfile, uploadAvatar: uploadOwnAvatar };
 }

@@ -1,4 +1,4 @@
-// This file contains the environment configuration for the test environment of the Better Auth server. It defines the port on which the server will run, the client URL, trusted origins, authentication URL, authentication secret, production status, and cookie settings. The configuration is exported as an object named `env`, which can be imported and used in other parts of the application to access these settings during testing.
+// This file defines the environment variables used in the test environment for the AuthAccKit server. It includes settings such as the server port, client URL, trusted origins, authentication URL and secret, production flag, cookie same-site policy, and the imgBB API key for image uploads. These variables are exported as an object named `env` for use in tests and other parts of the application that require access to these configuration values.
 const clientUrl = 'http://localhost:3000';
 
 export const env = {
@@ -9,4 +9,5 @@ export const env = {
   authSecret: 'a-test-secret-that-is-long-enough-for-better-auth',
   isProduction: false,
   cookieSameSite: 'lax',
+  imgbbApiKey: 'test-imgbb-key',
 };
