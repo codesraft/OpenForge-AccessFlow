@@ -28,3 +28,14 @@ export async function updateProfile(userId, changes) {
     { returnDocument: 'after' },
   );
 }
+
+// This function deletes the profile for a user. It is called when the user deletes their account, so it is not possible to delete a profile for a user that has never logged in.
+export function toProfileResponse(user, profile) {
+  return {
+    name: user.name,
+    email: user.email,
+    avatarUrl: profile.avatarUrl,
+    bio: profile.bio,
+    updatedAt: profile.updatedAt,
+  };
+}

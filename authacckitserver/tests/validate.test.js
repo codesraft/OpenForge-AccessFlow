@@ -28,6 +28,15 @@ describe('validateBody', () => {
     });
   });
 
+  it('requires a name that is not empty', async () => {
+    const res = await request(createTestApp(updateProfileSchema))
+      .post('/test')
+      .send({ name: '   ' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error.details.name).toBe('Name cannot be empty.');
+  });
+
   it('passes valid data on, trimmed', async () => {
     const res = await request(createTestApp(updateProfileSchema))
       .post('/test')

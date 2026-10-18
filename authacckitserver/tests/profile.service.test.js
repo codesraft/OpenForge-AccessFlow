@@ -1,37 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { getOrCreateProfile, updateProfile } from '../services/profile.service.js';
 import { getProfilesCollection } from '../db/collections.js';
+import { createFakeProfilesCollection } from './helpers/fake-profiles-collection.js';
 
 vi.mock('../db/collections.js', () => ({
   COLLECTION_NAMES: { profiles: 'profiles', sessions: 'session', accounts: 'account' },
   getProfilesCollection: vi.fn(),
 }));
 
-// A fake collection that simulates the behavior of a MongoDB collection for testing purposes. It stores documents in a Map and implements the findOneAndUpdate method to support upsert and field updates.
-function createFakeCollection() {
-  const documents = new Map();
-
-  return {
-    documents,
-    findOneAndUpdate: async ({ userId }, update, { upsert = false } = {}) => {
-      let document = documents.get(userId);
-
-      if (!document && upsert) {
-        document = { userId, ...update.$setOnInsert };
-        documents.set(userId, document);
-      }
-      if (document && update.$set) {
-        Object.assign(document, update.$set);
-      }
-      return document ?? null;
-    },
-  };
-}
-
 let collection;
 
 beforeEach(() => {
-  collection = createFakeCollection();
+  collection = createFakeProfilesCollection();
   getProfilesCollection.mockReturnValue(collection);
 });
 
