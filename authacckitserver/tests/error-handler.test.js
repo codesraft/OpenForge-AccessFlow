@@ -31,6 +31,18 @@ describe('errorHandler', () => {
     });
   });
 
+  it('includes extra details when an AppError carries them', async () => {
+    const app = express();
+    app.get('/invalid', () => {
+      throw new AppError(400, 'VALIDATION_ERROR', 'Invalid.', { bio: 'Too long.' });
+    });
+    app.use(errorHandler);
+
+    const res = await request(app).get('/invalid');
+
+    expect(res.body.error.details).toEqual({ bio: 'Too long.' });
+  });
+
   it('hides the details of unexpected errors from the client', async () => {
     const logSpy = vi.spyOn(logger, 'error').mockImplementation(() => {});
 

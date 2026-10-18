@@ -9,10 +9,10 @@ import { notFoundHandler, errorHandler } from './middleware/error-handler.js';
 export function createApp({ auth } = {}) {
   const app = express();
 
-  // Allow the client to make requests from a different origin, and send the session cookie.
+  // CORS is needed for the auth routes to work, since they are called from the client.
   app.use(cors({ origin: env.clientUrl, credentials: true }));
 
-  // The auth middleware is optional, so the server can run without it for testing or development.
+  // The auth routes are only added if the auth object is passed in. This is so that tests can run without needing to set up auth.
   if (auth) {
     app.all('/api/auth/{*splat}', toNodeHandler(auth));
   }
