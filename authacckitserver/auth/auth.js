@@ -1,6 +1,7 @@
 import { betterAuth } from 'better-auth';
 import { env } from '../utils/env.js';
 import { sendVerificationEmail } from '../services/email.service.js';
+import { sessionOwnershipGuard } from './session-ownership.js';
 
 // Where the browser lands after clicking the link in the verification email.
 const EMAIL_VERIFIED_REDIRECT = '/login';
@@ -33,6 +34,7 @@ export function createAuth(database) {
     baseURL: env.authUrl,
     // Better Auth rejects requests from any other origin, including sign-in redirects.
     trustedOrigins: [env.clientUrl],
+    hooks: { before: sessionOwnershipGuard },
     emailAndPassword: {
       enabled: true,
       // Nobody can log in until they have confirmed their email address.

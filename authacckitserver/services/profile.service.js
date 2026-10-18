@@ -29,7 +29,11 @@ export async function updateProfile(userId, changes) {
   );
 }
 
-// This function deletes the profile for a user. It is called when the user deletes their account, so it is not possible to delete a profile for a user that has never logged in.
+export function deleteProfile(userId) {
+  return getProfilesCollection().deleteOne({ userId });
+}
+
+// This function converts a user object and a profile object into a response object that can be sent to the client. It includes the user's name and email from the user object, and the avatarUrl, bio, and updatedAt fields from the profile object. This allows the client to display the user's profile information without exposing any sensitive data.
 export function toProfileResponse(user, profile) {
   return {
     name: user.name,

@@ -1,12 +1,8 @@
 import request from 'supertest';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { memoryAdapter } from 'better-auth/adapters/memory';
-import { createApp } from '../app.js';
-import { createAuth } from '../auth/auth.js';
-import { sendVerificationEmail } from '../services/email.service.js';
 import { getProfilesCollection } from '../db/collections.js';
 import { createFakeProfilesCollection } from './helpers/fake-profiles-collection.js';
-import { env } from '../utils/env.js';
+import { createAuthTestApp, signUpAndLogIn } from './helpers/auth-flow.js';
 
 vi.mock('../utils/env.js', () => ({
   env: {
@@ -27,28 +23,10 @@ let app;
 beforeEach(() => {
   vi.clearAllMocks();
   getProfilesCollection.mockReturnValue(createFakeProfilesCollection());
-  app = createApp({
-    auth: createAuth(memoryAdapter({ user: [], session: [], account: [], verification: [] })),
-  });
+  app = createAuthTestApp();
 });
 
-// Logs in a user by signing them up, verifying their email, and signing them in. Returns the session cookie to use in subsequent requests. The email verification link is intercepted by the mocked sendVerificationEmail function, so no real email is sent.
-async function loginAs(email) {
-  await request(app)
-    .post('/api/auth/sign-up/email')
-    .set('Origin', env.clientUrl)
-    .send({ name: 'Original Name', email, password: 'a-strong-password-1' });
-
-  const link = new URL(sendVerificationEmail.mock.calls.at(-1)[0].url);
-  await request(app).get(link.pathname + link.search);
-
-  const login = await request(app)
-    .post('/api/auth/sign-in/email')
-    .set('Origin', env.clientUrl)
-    .send({ email, password: 'a-strong-password-1' });
-
-  return login.headers['set-cookie'];
-}
+const loginAs = (email) => signUpAndLogIn(app, email);
 
 describe('GET /api/profile', () => {
   it('rejects a request without a session', async () => {
