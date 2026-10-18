@@ -7,10 +7,13 @@ import { env } from '../../utils/env.js';
 
 export const PASSWORD = 'a-strong-password-1';
 
-// Mocks the environment variables used by the auth middleware. This is necessary because the auth middleware reads these variables when it is created, and we want to control their values for testing.
+// Creates a test app with an in-memory database and the Better Auth instance. The app is used to test the authentication flow, including sign-up, email verification, and sign-in. The in-memory database allows for isolated tests without affecting a real database. The auth instance is created with the in-memory adapter and the server's configuration, including the secret, base URL, trusted origins, cookie settings, and hooks for session ownership checks.
 export function createAuthTestApp() {
-  const auth = createAuth(memoryAdapter({ user: [], session: [], account: [], verification: [] }));
-  return createApp({ auth });
+  const database = { user: [], session: [], account: [], verification: [] };
+  const app = createApp({ auth: createAuth(memoryAdapter(database)) });
+
+  app.locals.database = database;
+  return app;
 }
 
 export async function signIn(app, email, password = PASSWORD) {

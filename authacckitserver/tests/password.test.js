@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { sendPasswordResetEmail } from '../services/email.service.js';
 import { createAuthTestApp, signUpAndLogIn, signIn, PASSWORD } from './helpers/auth-flow.js';
 import { env } from '../utils/env.js';
@@ -18,10 +18,6 @@ let app;
 beforeEach(() => {
   vi.clearAllMocks();
   app = createAuthTestApp();
-});
-
-afterEach(() => {
-  vi.useRealTimers();
 });
 
 function requestReset(email) {
@@ -96,9 +92,10 @@ describe('reset password', () => {
     await signUpAndLogIn(app, EMAIL);
     await requestReset(EMAIL);
 
-    // Only the clock is faked, so the rest of the test runs normally.
-    vi.useFakeTimers({ toFake: ['Date'] });
-    vi.setSystemTime(Date.now() + 2 * 60 * 60 * 1000);
+    // Instead of waiting an hour, move the stored expiry into the past.
+    app.locals.database.verification.forEach((record) => {
+      record.expiresAt = new Date(Date.now() - 1000);
+    });
     const redirect = await openLastResetLink();
 
     expect(redirect.searchParams.get('error')).toBe('INVALID_TOKEN');
