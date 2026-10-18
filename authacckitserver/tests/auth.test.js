@@ -7,14 +7,7 @@ import { sendVerificationEmail } from '../services/email.service.js';
 import { AppError } from '../utils/app-error.js';
 import { env } from '../utils/env.js';
 
-vi.mock('../utils/env.js', () => ({
-  env: {
-    port: 5000,
-    clientUrl: 'http://localhost:3000',
-    authUrl: 'http://localhost:5000',
-    authSecret: 'a-test-secret-that-is-long-enough-for-better-auth',
-  },
-}));
+vi.mock('../utils/env.js', () => import('./helpers/test-env.js'));
 
 vi.mock('../services/email.service.js', () => ({
   sendVerificationEmail: vi.fn(),
@@ -110,6 +103,24 @@ describe('registration and email verification', () => {
 
     expect(res.status).toBe(200);
     expect(JSON.stringify(res.body)).not.toMatch(/smtp|stack/i);
+  });
+});
+
+describe('login attempts', () => {
+  it('blocks an email after repeated wrong passwords', async () => {
+    const attempt = () =>
+      request(app)
+        .post('/api/auth/sign-in/email')
+        .set('Origin', env.clientUrl)
+        .send({ email: newUser.email, password: 'wrong-password-1' });
+
+    for (let count = 0; count < 5; count += 1) {
+      expect((await attempt()).status).toBe(401);
+    }
+    const blocked = await attempt();
+
+    expect(blocked.status).toBe(429);
+    expect(blocked.body.error.code).toBe('RATE_LIMITED');
   });
 });
 

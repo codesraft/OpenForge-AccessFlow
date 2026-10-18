@@ -4,14 +4,7 @@ import { sendPasswordResetEmail } from '../services/email.service.js';
 import { createAuthTestApp, signUpAndLogIn, signIn, PASSWORD } from './helpers/auth-flow.js';
 import { env } from '../utils/env.js';
 
-vi.mock('../utils/env.js', () => ({
-  env: {
-    port: 5000,
-    clientUrl: 'http://localhost:3000',
-    authUrl: 'http://localhost:5000',
-    authSecret: 'a-test-secret-that-is-long-enough-for-better-auth',
-  },
-}));
+vi.mock('../utils/env.js', () => import('./helpers/test-env.js'));
 vi.mock('../services/email.service.js', () => ({
   sendVerificationEmail: vi.fn(),
   sendPasswordResetEmail: vi.fn(),

@@ -4,14 +4,7 @@ import { getProfilesCollection } from '../db/collections.js';
 import { createFakeProfilesCollection } from './helpers/fake-profiles-collection.js';
 import { createAuthTestApp, signUpAndLogIn, signIn } from './helpers/auth-flow.js';
 
-vi.mock('../utils/env.js', () => ({
-  env: {
-    port: 5000,
-    clientUrl: 'http://localhost:3000',
-    authUrl: 'http://localhost:5000',
-    authSecret: 'a-test-secret-that-is-long-enough-for-better-auth',
-  },
-}));
+vi.mock('../utils/env.js', () => import('./helpers/test-env.js'));
 vi.mock('../services/email.service.js', () => ({
   sendVerificationEmail: vi.fn(),
   sendPasswordResetEmail: vi.fn(),
