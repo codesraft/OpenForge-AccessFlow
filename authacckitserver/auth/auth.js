@@ -5,7 +5,7 @@ import { sessionOwnershipGuard } from './session-ownership.js';
 import { getCookieSettings } from './cookie-settings.js';
 
 // Where the browser lands after clicking the link in an email.
-const EMAIL_VERIFIED_REDIRECT = '/login';
+const EMAIL_VERIFIED_REDIRECT = '/verify-email';
 const PASSWORD_RESET_REDIRECT = '/reset-password';
 
 // Both links are valid for one hour, and Better Auth only accepts each of them once.

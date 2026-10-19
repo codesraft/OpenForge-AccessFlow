@@ -2,7 +2,7 @@ import { API_URL } from './config';
 
 const FALLBACK_MESSAGE = 'Something went wrong. Please try again.';
 
-// The API always returns JSON, so the client can always parse it and get a structured error.
+// This class represents an error returned by the API. It extends the built-in Error class and adds properties for the HTTP status code and a specific error code returned by the API. This allows the client to handle different types of errors in a structured way, providing more context about what went wrong during an API request.
 export class ApiError extends Error {
   constructor(status, code, message) {
     super(message);
@@ -17,7 +17,7 @@ export async function apiFetch(path, options = {}) {
     ...options,
     // Without this the browser would not send the session cookie to the server.
     credentials: 'include',
-    // The server expects JSON, so the client must send JSON.
+    // The server expects JSON for POST/PUT/PATCH, but GET/DELETE don't have a body.
     headers: options.body
       ? { 'Content-Type': 'application/json', ...options.headers }
       : options.headers,
@@ -27,7 +27,8 @@ export async function apiFetch(path, options = {}) {
   const body = await response.json().catch(() => null);
 
   if (!response.ok) {
-    const error = body?.error;
+    // Better Auth's own routes answer with { code, message } and no "error" wrapper.
+    const error = body?.error ?? body;
     throw new ApiError(
       response.status,
       error?.code ?? 'UNKNOWN_ERROR',

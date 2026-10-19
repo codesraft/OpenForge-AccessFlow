@@ -61,7 +61,9 @@ describe('registration and email verification', () => {
   it('sends the verification link back to the client, not the server', async () => {
     await signUp();
 
-    expect(lastVerificationLink().searchParams.get('callbackURL')).toBe(`${env.clientUrl}/login`);
+    expect(lastVerificationLink().searchParams.get('callbackURL')).toBe(
+      `${env.clientUrl}/verify-email`,
+    );
   });
 
   it('rejects login before the email is verified', async () => {
