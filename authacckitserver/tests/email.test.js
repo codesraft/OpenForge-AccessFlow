@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { sendVerificationEmail, sendPasswordResetEmail } from '../services/email.service.js';
 import { verificationEmail } from '../services/email-templates.js';
 import { AppError } from '../utils/app-error.js';
@@ -12,7 +12,11 @@ vi.mock('nodemailer', () => ({
 }));
 
 vi.mock('../utils/env.js', () => ({
-  env: { smtpUrl: 'smtp://user:pass@smtp.example.com:587', emailFrom: 'no-reply@example.com' },
+  env: {
+    smtpUrl: 'smtp://user:pass@smtp.example.com:587',
+    emailFrom: 'no-reply@example.com',
+    isProduction: false,
+  },
 }));
 
 const link = 'http://localhost:5000/api/auth/verify-email?token=abc123';
@@ -53,16 +57,31 @@ describe('sending emails', () => {
     expect(logger.error).toHaveBeenCalled();
   });
 
-  it('fails safely when email is not configured', async () => {
-    const originalUrl = env.smtpUrl;
-    env.smtpUrl = undefined;
+  describe('when email is not configured', () => {
+    const original = { ...env };
 
-    await expect(sendVerificationEmail({ to: 'user@example.com', url: link })).rejects.toThrow(
-      'We could not send the email',
-    );
-    expect(sendMail).not.toHaveBeenCalled();
+    beforeEach(() => {
+      env.smtpUrl = undefined;
+      vi.spyOn(logger, 'info').mockImplementation(() => {});
+    });
 
-    env.smtpUrl = originalUrl;
+    afterEach(() => Object.assign(env, original));
+
+    it('prints the email in development so the flow can still be tried', async () => {
+      await sendVerificationEmail({ to: 'user@example.com', url: link });
+
+      expect(sendMail).not.toHaveBeenCalled();
+      expect(logger.info).toHaveBeenCalledWith(expect.stringContaining(link));
+    });
+
+    it('fails safely in production instead of hiding the problem', async () => {
+      env.isProduction = true;
+
+      await expect(sendVerificationEmail({ to: 'user@example.com', url: link })).rejects.toThrow(
+        'We could not send the email',
+      );
+      expect(sendMail).not.toHaveBeenCalled();
+    });
   });
 });
 

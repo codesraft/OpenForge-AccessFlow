@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { authClient } from '@/lib/auth-client';
+import { runAuthRequest } from '@/lib/auth-request';
 import { getErrorMessage } from '@/lib/auth-errors';
 import { registerSchema } from '@/lib/validation/auth-schemas';
 import { FormField } from '@/components/ui/form-field';
@@ -24,7 +25,9 @@ export function RegisterForm() {
   async function onSubmit({ name, email, password }) {
     setServerError(null);
 
-    const { error } = await authClient.signUp.email({ name, email, password });
+    const { error } = await runAuthRequest(() =>
+      authClient.signUp.email({ name, email, password }),
+    );
 
     if (error) {
       setServerError(getErrorMessage(error));

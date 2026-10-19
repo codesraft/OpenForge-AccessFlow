@@ -74,6 +74,17 @@ describe('RegisterForm', () => {
     expect(screen.getByRole('button', { name: 'Create account' })).toBeDefined();
   });
 
+  it('shows a friendly message when the server cannot be reached', async () => {
+    authClient.signUp.email.mockRejectedValue(new TypeError('Failed to fetch'));
+    render(<RegisterForm />);
+    fillValidForm();
+
+    clickButton('Create account');
+
+    expect(await screen.findByText(/could not reach the server/i)).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Create account' })).toBeDefined();
+  });
+
   it('shows a loading label while the request is running', async () => {
     authClient.signUp.email.mockReturnValue(new Promise(() => {}));
     render(<RegisterForm />);

@@ -12,10 +12,20 @@ function getTransporter() {
   return transporter;
 }
 
+const SAFE_FAILURE_MESSAGE = 'We could not send the email. Please try again.';
+
 async function sendEmail({ to, subject, text, html }) {
   if (!env.smtpUrl || !env.emailFrom) {
+    // The email cannot be sent, but we do not want to leak the SMTP URL or the sender address in the error message. In development, we log the email instead of sending it, so developers can see what would have been sent.
+    if (!env.isProduction) {
+      logger.info(
+        `Email is not configured, so it was printed instead of sent.\nTo: ${to}\nSubject: ${subject}\n\n${text}`,
+      );
+      return;
+    }
+
     logger.error('Email is not configured: set SMTP_URL and EMAIL_FROM.');
-    throw new AppError(500, 'EMAIL_SEND_FAILED', 'We could not send the email. Please try again.');
+    throw new AppError(500, 'EMAIL_SEND_FAILED', SAFE_FAILURE_MESSAGE);
   }
 
   try {
@@ -23,7 +33,7 @@ async function sendEmail({ to, subject, text, html }) {
   } catch (error) {
     // The provider's error can contain server details, so it only goes to the log.
     logger.error(`Could not send the "${subject}" email:`, error);
-    throw new AppError(500, 'EMAIL_SEND_FAILED', 'We could not send the email. Please try again.');
+    throw new AppError(500, 'EMAIL_SEND_FAILED', SAFE_FAILURE_MESSAGE);
   }
 }
 

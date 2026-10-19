@@ -1,4 +1,5 @@
 import { API_URL } from './config';
+import { NETWORK_ERROR_MESSAGE } from './auth-errors';
 
 const FALLBACK_MESSAGE = 'Something went wrong. Please try again.';
 
@@ -13,15 +14,25 @@ export class ApiError extends Error {
 }
 
 export async function apiFetch(path, options = {}) {
-  const response = await fetch(`${API_URL}${path}`, {
-    ...options,
-    // Without this the browser would not send the session cookie to the server.
-    credentials: 'include',
-    // The server expects JSON for POST/PUT/PATCH, but GET/DELETE don't have a body.
-    headers: options.body
-      ? { 'Content-Type': 'application/json', ...options.headers }
-      : options.headers,
-  });
+  // FormData is used for file uploads, and the browser sets the content type itself (with a boundary) when sending FormData. If we set the content type to application/json, the server will not be able to parse the request.
+  const isFileUpload = options.body instanceof FormData;
+  const hasJsonBody = options.body && !isFileUpload;
+
+  let response;
+  try {
+    response = await fetch(`${API_URL}${path}`, {
+      ...options,
+      // Without this the browser would not send the session cookie to the server.
+      credentials: 'include',
+      // Only set the content type when there is a body and it is not a file upload. The browser sets the content type itself for file uploads, because it has to add the boundary that separates the parts of the form.
+      headers: hasJsonBody
+        ? { 'Content-Type': 'application/json', ...options.headers }
+        : options.headers,
+    });
+  } catch {
+    // fetch only throws when the request never got an answer.
+    throw new ApiError(0, 'NETWORK_ERROR', NETWORK_ERROR_MESSAGE);
+  }
 
   // The body can be empty or not JSON (for example a gateway error), so don't let parsing throw.
   const body = await response.json().catch(() => null);

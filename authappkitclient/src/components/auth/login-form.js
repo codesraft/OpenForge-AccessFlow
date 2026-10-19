@@ -7,6 +7,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { authClient } from '@/lib/auth-client';
+import { runAuthRequest } from '@/lib/auth-request';
 import { getErrorCode, getErrorMessage } from '@/lib/auth-errors';
 import { loginSchema } from '@/lib/validation/auth-schemas';
 import { SESSION_QUERY_KEY } from '@/hooks/use-session';
@@ -32,7 +33,7 @@ export function LoginForm() {
     setServerError(null);
     setUnverifiedEmail(null);
 
-    const { error } = await authClient.signIn.email({ email, password });
+    const { error } = await runAuthRequest(() => authClient.signIn.email({ email, password }));
 
     if (error) {
       if (getErrorCode(error) === 'EMAIL_NOT_VERIFIED') setUnverifiedEmail(email);
@@ -40,7 +41,8 @@ export function LoginForm() {
       return;
     }
 
-    // Clear the cached session data so that the next time useSession is called, it will fetch the new session from the server. This ensures that the app knows the user is now logged in and can update the UI accordingly.
+    // An earlier "nobody is logged in" answer may still be cached. Removing it makes the
+    // next page wait for a fresh answer instead of sending the user straight back here.
     queryClient.removeQueries({ queryKey: SESSION_QUERY_KEY });
     router.replace(AFTER_LOGIN_PATH);
   }

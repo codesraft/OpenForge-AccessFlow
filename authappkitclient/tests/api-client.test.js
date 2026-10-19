@@ -33,6 +33,26 @@ describe('apiFetch', () => {
     expect(fetchMock.mock.calls[1][1].headers['Content-Type']).toBe('application/json');
   });
 
+  it('leaves the content type to the browser for file uploads', async () => {
+    const fetchMock = stubFetch();
+    const form = new FormData();
+    form.append('avatar', new Blob(['x']), 'avatar.jpg');
+
+    await apiFetch('/api/profile/avatar', { method: 'POST', body: form });
+
+    expect(fetchMock.mock.calls[0][1].headers).toBeUndefined();
+  });
+
+  it('turns an unreachable server into a friendly ApiError', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
+
+    await expect(apiFetch('/api/profile')).rejects.toMatchObject({
+      status: 0,
+      code: 'NETWORK_ERROR',
+      message: expect.stringMatching(/could not reach the server/i),
+    });
+  });
+
   it('turns our error format into an ApiError', async () => {
     stubFetch({
       ok: false,

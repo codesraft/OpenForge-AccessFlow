@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { authClient } from '@/lib/auth-client';
+import { runAuthRequest } from '@/lib/auth-request';
 import { getErrorMessage } from '@/lib/auth-errors';
 import { forgotPasswordSchema } from '@/lib/validation/auth-schemas';
 import { FormField } from '@/components/ui/form-field';
@@ -23,7 +24,7 @@ export function ForgotPasswordForm() {
   async function onSubmit({ email }) {
     setServerError(null);
 
-    const { error } = await authClient.requestPasswordReset({ email });
+    const { error } = await runAuthRequest(() => authClient.requestPasswordReset({ email }));
 
     if (error) {
       setServerError(getErrorMessage(error));
@@ -32,7 +33,8 @@ export function ForgotPasswordForm() {
     setIsSent(true);
   }
 
-  // If the reset link was sent successfully, we show a success message. If there was an error, we show the error message. Otherwise, we show the form with an email input and a submit button. The form uses react-hook-form for validation and submission handling.
+  // The same message is shown whether or not the email has an account, so this page
+  // cannot be used to find out who is registered.
   if (isSent) {
     return (
       <FormMessage type="success">

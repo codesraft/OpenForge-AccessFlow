@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { authClient } from '@/lib/auth-client';
+import { runAuthRequest } from '@/lib/auth-request';
 import { getErrorMessage } from '@/lib/auth-errors';
 import { resetPasswordSchema } from '@/lib/validation/auth-schemas';
 import { FormField } from '@/components/ui/form-field';
@@ -24,7 +25,7 @@ export function ResetPasswordForm({ token }) {
   async function onSubmit({ newPassword }) {
     setServerError(null);
 
-    const { error } = await authClient.resetPassword({ newPassword, token });
+    const { error } = await runAuthRequest(() => authClient.resetPassword({ newPassword, token }));
 
     if (error) {
       setServerError(getErrorMessage(error));

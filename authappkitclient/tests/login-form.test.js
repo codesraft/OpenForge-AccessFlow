@@ -83,6 +83,16 @@ describe('LoginForm', () => {
     expect(replace).not.toHaveBeenCalled();
   });
 
+  it('shows a friendly message when the server cannot be reached', async () => {
+    authClient.signIn.email.mockRejectedValue(new TypeError('Failed to fetch'));
+    renderForm();
+
+    clickButton('Log in');
+
+    expect(await screen.findByText(/could not reach the server/i)).toBeDefined();
+    expect(replace).not.toHaveBeenCalled();
+  });
+
   it('offers to resend the link when the email is not verified yet', async () => {
     authClient.signIn.email.mockResolvedValue({
       data: null,

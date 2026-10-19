@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { authClient } from '@/lib/auth-client';
+import { runAuthRequest } from '@/lib/auth-request';
 import { getErrorMessage } from '@/lib/auth-errors';
 import { FormMessage } from '@/components/ui/form-message';
 
@@ -14,7 +15,7 @@ export function ResendVerificationButton({ email }) {
     setStatus('sending');
     setErrorMessage(null);
 
-    const { error } = await authClient.sendVerificationEmail({ email });
+    const { error } = await runAuthRequest(() => authClient.sendVerificationEmail({ email }));
 
     if (error) {
       setErrorMessage(getErrorMessage(error));
