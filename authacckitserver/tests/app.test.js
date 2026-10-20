@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { describe, it, expect } from 'vitest';
-import { createApp } from '../app.js';
+import { createApp } from '../create-app.js';
 import { env } from '../utils/env.js';
 
 const app = createApp();

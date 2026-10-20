@@ -1,5 +1,5 @@
 import { mongodbAdapter } from 'better-auth/adapters/mongodb';
-import { createApp } from './app.js';
+import { createApp } from './create-app.js';
 import { createAuth } from './auth/auth.js';
 import { connectToDatabase } from './db/client.js';
 import { ensureIndexes } from './db/indexes.js';

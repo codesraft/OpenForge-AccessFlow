@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { memoryAdapter } from 'better-auth/adapters/memory';
-import { createApp } from '../../app.js';
+import { createApp } from '../../create-app.js';
 import { createAuth } from '../../auth/auth.js';
 import { sendVerificationEmail } from '../../services/email.service.js';
 import { env } from '../../utils/env.js';
