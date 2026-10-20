@@ -27,9 +27,10 @@ Open http://localhost:3000. The server from `authacckitserver` must be running t
 
 ## Environment variables
 
-| Variable              | Description                                                |
-| --------------------- | ---------------------------------------------------------- |
-| `NEXT_PUBLIC_API_URL` | Public URL of the server. Default `http://localhost:5000`. |
+| Variable              | Description                                                                               |
+| --------------------- | ----------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_API_URL` | Public URL of the server. Default `http://localhost:5000`.                                |
+| `API_PROXY_TARGET`    | Optional. Server URL that `/api/*` is forwarded to (same-origin mode, see DEPLOYMENT.md). |
 
 Nothing secret belongs in this file: `NEXT_PUBLIC_` values are visible in the browser.
 
@@ -72,4 +73,6 @@ src/lib/               API client, error messages, config, Zod schemas
    described in the server README.
 
 Cookies between two separate deployments need HTTPS, `SameSite=None` and an exact `CLIENT_URL`.
-See the server's `docs/architecture.md` for details and common problems.
+If a browser still drops the cookie (Safari does for two `*.vercel.app` projects), switch to the
+same-origin proxy mode described in [DEPLOYMENT.md](../DEPLOYMENT.md). See the server's
+`docs/architecture.md` for details and common problems.

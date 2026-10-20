@@ -107,12 +107,17 @@ The full API, the authentication flow and troubleshooting are in
 
 1. Create a MongoDB Atlas cluster and allow your host's IP addresses in **Network Access**.
 2. Deploy this repository (Vercel, Render or similar) with `NODE_ENV=production` and every
-   variable from the table above.
+   variable from the table above. On Vercel nothing else is needed: `vercel.json` and
+   `api/index.js` run the Express app as a serverless function. On Render or a VPS, run
+   `npm start`.
 3. Set `BETTER_AUTH_URL` to the deployed server URL and `CLIENT_URL` to the deployed client URL.
 4. Add the production redirect URI to your Google OAuth client.
 5. Deploy the client with `NEXT_PUBLIC_API_URL` pointing at this server.
 6. Check the full flow once on the production URLs: sign up, verify, log in, Google, reset
    password, refresh the page.
+
+Step-by-step instructions with exact values for both deployments are in
+[DEPLOYMENT.md](../DEPLOYMENT.md).
 
 > **Rate limiting note:** the limiter keeps its counters in memory. That is fine for a single
 > server, but counters are not shared between several instances or serverless invocations. Use a
@@ -121,6 +126,7 @@ The full API, the authentication flow and troubleshooting are in
 ## Project structure
 
 ```
+api/           Vercel serverless entry point (index.js is the long-running equivalent)
 auth/          Better Auth configuration (cookies, providers, session ownership)
 routes/        URL to controller wiring
 controllers/   Read the request, call a service, send the response

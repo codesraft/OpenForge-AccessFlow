@@ -1,9 +1,6 @@
-import { mongodbAdapter } from 'better-auth/adapters/mongodb';
-import { createApp } from './app.js';
-import { createAuth } from './auth/auth.js';
+import { createConfiguredApp } from './create-server-app.js';
 import { env } from './utils/env.js';
-import { connectToDatabase, closeDatabase } from './db/client.js';
-import { ensureIndexes } from './db/indexes.js';
+import { closeDatabase } from './db/client.js';
 import { logger } from './utils/logger.js';
 
 async function start() {
@@ -12,18 +9,16 @@ async function start() {
     process.exit(1);
   }
 
-  let auth;
+  let app;
   try {
-    const db = await connectToDatabase();
-    await ensureIndexes(db);
-    auth = createAuth(mongodbAdapter(db));
+    app = await createConfiguredApp();
   } catch (error) {
     // Without the database or auth config every request would fail, so stop right away.
     logger.error('Could not start the server:', error.message);
     process.exit(1);
   }
 
-  const server = createApp({ auth }).listen(env.port, () => {
+  const server = app.listen(env.port, () => {
     logger.info(`AuthAccKit server running on port ${env.port}`);
   });
 
