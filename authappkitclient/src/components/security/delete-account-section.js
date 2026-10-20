@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
-import { useDeleteAccount } from '@/hooks/use-sessions';
+import { useDeleteAccount } from '@/hooks/use-delete-account';
+import { DELETE_CONFIRMATION_WORD } from '@/lib/config';
 import { FormMessage } from '@/components/ui/form-message';
 
-const CONFIRMATION_WORD = 'DELETE';
 const AFTER_DELETE_PATH = '/';
 
 export function DeleteAccountSection() {
@@ -38,7 +38,7 @@ export function DeleteAccountSection() {
       </p>
       {errorMessage && <FormMessage>{errorMessage}</FormMessage>}
       <label className="block space-y-1 text-sm font-medium">
-        Type {CONFIRMATION_WORD} to confirm
+        Type {DELETE_CONFIRMATION_WORD} to confirm
         <input
           value={typedWord}
           onChange={(event) => setTypedWord(event.target.value)}
@@ -47,7 +47,7 @@ export function DeleteAccountSection() {
       </label>
       <button
         type="button"
-        disabled={typedWord !== CONFIRMATION_WORD || deleteAccount.isPending}
+        disabled={typedWord !== DELETE_CONFIRMATION_WORD || deleteAccount.isPending}
         onClick={onDelete}
         className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
       >

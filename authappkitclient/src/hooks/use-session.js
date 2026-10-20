@@ -10,7 +10,7 @@ function fetchSession() {
   return apiFetch('/api/auth/get-session');
 }
 
-// This hook returns the current session and user, or null if nobody is logged in. It uses TanStack Query to cache the result and keep it up to date. The session is read from the server, so it is always accurate even if the user logs in or out in another tab.
+// Read from the server on purpose: the cookie is HttpOnly, so the browser cannot inspect it.
 export function useSession() {
   const query = useQuery({ queryKey: SESSION_QUERY_KEY, queryFn: fetchSession });
 

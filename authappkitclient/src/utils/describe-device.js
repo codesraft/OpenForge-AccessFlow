@@ -1,4 +1,3 @@
-
 const BROWSERS = [
   ['Edg/', 'Edge'],
   ['OPR/', 'Opera'],

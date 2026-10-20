@@ -78,6 +78,15 @@ describe('ProtectedRoute', () => {
     expect(replace).not.toHaveBeenCalled();
   });
 
+  it('lets an unverified user ask for a new verification email', async () => {
+    const respond = stubSessionResponse();
+    renderProtectedPage();
+
+    respond(200, { user: { email: 'sam@example.com', emailVerified: false }, session: {} });
+
+    expect(await screen.findByRole('button', { name: 'Resend verification email' })).toBeDefined();
+  });
+
   it('does not log anyone out when the session check itself fails', async () => {
     const respond = stubSessionResponse();
     renderProtectedPage();

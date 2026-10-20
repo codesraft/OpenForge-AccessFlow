@@ -10,7 +10,7 @@ export function fitWithin(width, height, maxSide = MAX_SIDE_PX) {
   return { width: Math.round(width * scale), height: Math.round(height * scale) };
 }
 
-// Resizes an image file to fit within a square of MAX_SIDE_PX, preserving its aspect ratio, and returns a new image blob in JPEG format with the specified quality. If the original image has transparency, it will be filled with a white background.
+// Shrinks the image before upload to save bandwidth. The server still checks type and size.
 export async function resizeImage(file) {
   const bitmap = await createImageBitmap(file);
   const { width, height } = fitWithin(bitmap.width, bitmap.height);

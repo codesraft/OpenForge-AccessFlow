@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# AuthAccKit Client
 
-## Getting Started
+Next.js (App Router) frontend for AuthAccKit, a reusable authentication and account-lifecycle
+kit. It talks to the `authacckitserver` API with the session cookie. The client never handles
+passwords or tokens itself.
 
-First, run the development server:
+## Features
+
+- Register, log in, log out, "Continue with Google"
+- Email verification result page and a resend button
+- Forgot password and reset password
+- Protected routes that wait for the session check before redirecting
+- Profile page with avatar upload (resized in the browser first)
+- Security page: change password, view and revoke devices, delete account
+
+## Quick start
 
 ```bash
+git clone <this-repository-url>
+cd authappkitclient
+npm install
+cp .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000. The server from `authacckitserver` must be running too.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Environment variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable              | Description                                                |
+| --------------------- | ---------------------------------------------------------- |
+| `NEXT_PUBLIC_API_URL` | Public URL of the server. Default `http://localhost:5000`. |
 
-## Learn More
+Nothing secret belongs in this file: `NEXT_PUBLIC_` values are visible in the browser.
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Command            | What it does                |
+| ------------------ | --------------------------- |
+| `npm run dev`      | Development server          |
+| `npm run build`    | Production build            |
+| `npm start`        | Serve the production build  |
+| `npm test`         | Unit and component tests    |
+| `npm run test:e2e` | Playwright end-to-end tests |
+| `npm run lint`     | ESLint                      |
+| `npm run format`   | Prettier                    |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project structure
 
-## Deploy on Vercel
+```
+src/app/(auth)/        Login, register, forgot/reset password, verify email
+src/app/(protected)/   Dashboard, profile, security (wrapped in ProtectedRoute)
+src/components/auth/   Reusable forms, ProtectedRoute, Google button
+src/components/ui/     Small shared pieces (fields, buttons, messages)
+src/hooks/             TanStack Query hooks for session, profile, devices
+src/lib/               API client, error messages, config, Zod schemas
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Reusing it in another project
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `ProtectedRoute` plus `useSession` show a skeleton while the session loads and redirect to
+  `/login` only once the server has answered "no session".
+- Forms in `components/auth` only depend on `lib/` and `components/ui`. Copy those folders and set
+  `NEXT_PUBLIC_API_URL`.
+- Paths such as `/login` and `/dashboard` live in `src/lib/config.js`.
+
+## Deploying
+
+1. Deploy the server first and note its URL.
+2. Create a Vercel project from this repository and set `NEXT_PUBLIC_API_URL` to the server URL.
+3. On the server, set `CLIENT_URL` to this deployment's URL, and add the Google redirect URI
+   described in the server README.
+
+Cookies between two separate deployments need HTTPS, `SameSite=None` and an exact `CLIENT_URL`.
+See the server's `docs/architecture.md` for details and common problems.

@@ -1,5 +1,5 @@
-// A centred message with an optional action, for pages that cannot show their content.
-export function StatusMessage({ title, message, actionLabel, onAction }) {
+// A centred message for pages that cannot show their content. It can carry a button or extra content.
+export function StatusMessage({ title, message, actionLabel, onAction, children }) {
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
       <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
@@ -13,6 +13,7 @@ export function StatusMessage({ title, message, actionLabel, onAction }) {
           {actionLabel}
         </button>
       )}
+      {children}
     </main>
   );
 }

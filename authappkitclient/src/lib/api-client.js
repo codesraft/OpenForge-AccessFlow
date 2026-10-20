@@ -1,7 +1,7 @@
 import { API_URL } from './config';
 import { NETWORK_ERROR_MESSAGE, getErrorMessage } from './auth-errors';
 
-// This class represents an error returned by the API. It extends the built-in Error class and adds two additional properties: status and code. The status property holds the HTTP status code of the response, while the code property holds a specific error code returned by the API. This allows for more detailed error handling in the client application, enabling developers to respond appropriately to different types of errors based on their status and code.
+// Carries the HTTP status and the server's error code, so callers can react to specific failures.
 export class ApiError extends Error {
   constructor(status, code, message) {
     super(message);
@@ -12,7 +12,7 @@ export class ApiError extends Error {
 }
 
 export async function apiFetch(path, options = {}) {
-  // The body can be a FormData (for file uploads) or a JSON object. If it's a JSON object, we need to stringify it before sending it in the request. If it's a FormData, we leave it as is, because the browser will handle it automatically.
+  // FormData sets its own multipart Content-Type (with the boundary), so only JSON bodies get one.
   const isFileUpload = options.body instanceof FormData;
   const hasJsonBody = options.body && !isFileUpload;
 
@@ -22,7 +22,6 @@ export async function apiFetch(path, options = {}) {
       ...options,
       // Without this the browser would not send the session cookie to the server.
       credentials: 'include',
-      // The server expects JSON for most requests, so we set the content type here. If the body is a FormData (for file uploads), we don't set it, because the browser will handle it automatically.
       headers: hasJsonBody
         ? { 'Content-Type': 'application/json', ...options.headers }
         : options.headers,

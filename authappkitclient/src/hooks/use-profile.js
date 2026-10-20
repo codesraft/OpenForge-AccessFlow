@@ -10,7 +10,7 @@ export function useProfile() {
   return useQuery({ queryKey: PROFILE_QUERY_KEY, queryFn: () => apiFetch('/api/profile') });
 }
 
-// This hook is used for mutations that change the profile. It updates the cached profile data and invalidates the session query so that the session data is refetched from the server, ensuring that any changes to the profile are reflected in the session as well.
+// The name comes from the session too, so the session is refetched after any profile change.
 function useProfileMutation(request) {
   const queryClient = useQueryClient();
 

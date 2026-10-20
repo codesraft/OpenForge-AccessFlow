@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useChangePassword } from '@/hooks/use-sessions';
+import { useChangePassword } from '@/hooks/use-change-password';
 import { changePasswordSchema } from '@/lib/validation/security-schemas';
 import { FormField } from '@/components/ui/form-field';
 import { FormMessage } from '@/components/ui/form-message';

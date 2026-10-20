@@ -10,7 +10,7 @@ const LINK_EXPIRED_MESSAGE = 'This link is invalid or has expired. Please reques
 const ACCOUNT_EXISTS_MESSAGE = 'An account with this email already exists. Try logging in instead.';
 const GOOGLE_FAILED_MESSAGE = 'The sign-in with Google did not complete. Please try again.';
 
-// This object maps specific error codes returned by the API to user-friendly error messages. It covers various scenarios such as signing up, logging in, handling links from emails, session management, rate limiting, file uploads, and signing in with Google. Each error code is associated with a message that can be displayed to the user to provide context about what went wrong and how to resolve it.
+// Server error codes mapped to messages that tell the user what to do next.
 const MESSAGES_BY_CODE = {
   // Signing up and logging in
   INVALID_EMAIL_OR_PASSWORD: 'The email or password is not correct.',
@@ -53,12 +53,13 @@ const MESSAGES_BY_CODE = {
   INVALID_CODE: GOOGLE_FAILED_MESSAGE,
 };
 
-// This function takes an error object and returns the error code, if it exists. It checks for the code in multiple places within the error object, including the top-level code property and a nested error.code property. If no code is found, it returns null. This allows the client to handle errors based on their specific codes, which can be useful for displaying user-friendly messages or taking specific actions based on the type of error encountered.
+// Better Auth and our own API put the code in different places, so both are checked.
 export function getErrorCode(error) {
   return error?.code ?? error?.error?.code ?? null;
 }
 
-// This function takes an error object and returns a user-friendly error message based on the error code or HTTP status. It first checks if the error code exists in the predefined MESSAGES_BY_CODE mapping. If not, it checks the HTTP status code to provide a relevant message for server errors, unauthorized access, forbidden actions, or rate limiting. If none of these conditions are met, it falls back to the error's message or a generic fallback message.
+// Falls back from the specific code, to the HTTP status, to a generic message. Raw server text
+// is only used as a last resort.
 export function getErrorMessage(error) {
   const code = getErrorCode(error)?.toUpperCase();
   if (code && MESSAGES_BY_CODE[code]) return MESSAGES_BY_CODE[code];

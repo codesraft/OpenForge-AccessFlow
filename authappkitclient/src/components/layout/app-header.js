@@ -5,10 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { authClient } from '@/lib/auth-client';
 import { runAuthRequest } from '@/lib/auth-request';
+import { LOGIN_PATH } from '@/lib/config';
 
-const LOGIN_PATH = '/login';
-
-// The bar shown on every page for logged-in users.
 export function AppHeader() {
   const router = useRouter();
   const queryClient = useQueryClient();
