@@ -10,15 +10,13 @@ import { authClient } from '@/lib/auth-client';
 import { runAuthRequest } from '@/lib/auth-request';
 import { getErrorCode, getErrorMessage } from '@/lib/auth-errors';
 import { loginSchema } from '@/lib/validation/auth-schemas';
+import { AFTER_LOGIN_PATH } from '@/lib/config';
 import { SESSION_QUERY_KEY } from '@/hooks/use-session';
 import { FormField } from '@/components/ui/form-field';
 import { FormMessage } from '@/components/ui/form-message';
 import { SubmitButton } from '@/components/ui/submit-button';
 import { ResendVerificationButton } from './resend-verification-button';
 
-const AFTER_LOGIN_PATH = '/dashboard';
-
-// The login form for the app. It handles user input, validation, and submission to the authentication API. If the login is successful, it clears any cached session data and redirects the user to the dashboard. If there are errors, it displays appropriate messages to the user.
 export function LoginForm({ initialError = null }) {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -42,7 +40,7 @@ export function LoginForm({ initialError = null }) {
       return;
     }
 
-    // The login was successful, so the session is now different. Forget any cached data that belonged to the previous session.
+    // The session has changed, so anything cached for the previous one must go.
     queryClient.removeQueries({ queryKey: SESSION_QUERY_KEY });
     router.replace(AFTER_LOGIN_PATH);
   }

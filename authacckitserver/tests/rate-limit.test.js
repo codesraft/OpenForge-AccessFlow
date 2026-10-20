@@ -8,6 +8,7 @@ const LIMITS = {
   signIn: { windowMs: 60_000, perIp: 4, perEmail: 2 },
   signUp: { windowMs: 60_000, perIp: 2, perEmail: 5 },
   passwordReset: { windowMs: 60_000, perIp: 5, perEmail: 1 },
+  verificationEmail: { windowMs: 60_000, perIp: 5, perEmail: 1 },
 };
 
 // A stand-in for Better Auth: it answers 401 for a wrong password and 200 otherwise.
@@ -102,5 +103,20 @@ describe('rate limiting', () => {
       const res = await request(app).post('/api/auth/sign-out').send({});
       expect(res.status).toBe(401);
     }
+  });
+
+  it('limits resending the verification email, which would otherwise flood an inbox', async () => {
+    const app = createTestApp();
+    const resend = (ip) =>
+      request(app)
+        .post('/api/auth/send-verification-email')
+        .set('X-Forwarded-For', ip)
+        .send({ email: 'sam@example.com' });
+
+    await resend('1.1.1.1');
+    const res = await resend('2.2.2.2');
+
+    expect(res.status).toBe(429);
+    expect(res.body.error.code).toBe('RATE_LIMITED');
   });
 });

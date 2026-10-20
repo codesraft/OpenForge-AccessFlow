@@ -48,6 +48,7 @@ const MESSAGES_BY_CODE = {
     'An account with this email already exists. Log in with your password first.',
   UNABLE_TO_GET_USER_INFO: 'We could not get your details from Google. Please try again.',
   FAILED_TO_GET_USER_INFO: 'We could not get your details from Google. Please try again.',
+  PROVIDER_NOT_FOUND: 'Sign-in with Google is not available right now.',
   STATE_MISMATCH: GOOGLE_FAILED_MESSAGE,
   INVALID_CODE: GOOGLE_FAILED_MESSAGE,
 };

@@ -1,13 +1,14 @@
-import { Router } from 'express';
-import express from 'express';
+import express, { Router } from 'express';
 import { rateLimit, ipKeyGenerator, MINUTE, HOUR } from 'express-rate-limit';
 import { AppError } from '../utils/app-error.js';
 
-// The default rate limits for the authentication routes. Each route has a time window (windowMs) and a maximum number of requests allowed per IP address (perIp) and per email address (perEmail). The limits are designed to prevent abuse while allowing legitimate users to access the service. The sign-in route has a lower limit for email addresses to prevent brute-force attacks, while the sign-up and password reset routes have higher limits to accommodate legitimate users.
+// The default rate limits for various authentication-related actions, such as signing in, signing up, requesting password resets, and sending verification emails. Each action has a specified time window and limits for requests per IP address and per email address. These limits help prevent abuse and ensure fair usage of the authentication system.
 const DEFAULT_LIMITS = {
   signIn: { windowMs: 15 * MINUTE, perIp: 20, perEmail: 5 },
   signUp: { windowMs: HOUR, perIp: 10, perEmail: 3 },
   passwordReset: { windowMs: HOUR, perIp: 10, perEmail: 3 },
+  // Each call sends an email, so without a limit it could be used to flood someone's inbox.
+  verificationEmail: { windowMs: HOUR, perIp: 10, perEmail: 3 },
 };
 
 function createLimiter({ windowMs, limit, keyGenerator, skipSuccessfulRequests = false }) {
@@ -16,7 +17,7 @@ function createLimiter({ windowMs, limit, keyGenerator, skipSuccessfulRequests =
     limit,
     keyGenerator,
     skipSuccessfulRequests,
-    // When the limit is exceeded, the handler throws an AppError with a 429 status code and a standard error message. This ensures that the client receives a consistent error response format for rate limiting.
+    // Goes through the shared error handler so a blocked request looks like every other error.
     handler: (req, res, next) =>
       next(new AppError(429, 'RATE_LIMITED', 'Too many attempts. Please try again later.')),
   });
@@ -24,13 +25,13 @@ function createLimiter({ windowMs, limit, keyGenerator, skipSuccessfulRequests =
 
 const ipKey = (req) => ipKeyGenerator(req.ip);
 
-// The email key is used to limit attempts per email address. It normalizes the email to lowercase and trims whitespace, so "
+// Lower-casing and trimming stops "Sam@x.com" and "sam@x.com " from counting as two accounts.
 function emailKey(req) {
   const email = req.body?.email;
   return typeof email === 'string' ? `email:${email.trim().toLowerCase()}` : ipKey(req);
 }
 
-// Creates two limiters for a route: one that limits by IP address and one that limits by email address. The limits can be customized by passing an object with the desired windowMs, perIp, and perEmail values. The skipSuccessfulRequests option can be set to true to only count failed requests towards the limit, which is useful for sign-in routes where successful logins should not be penalized.
+// Successful requests can be left uncounted, so a real user logging in is never locked out.
 function limitersFor({ windowMs, perIp, perEmail }, { skipSuccessfulRequests = false } = {}) {
   return [
     createLimiter({ windowMs, limit: perIp, keyGenerator: ipKey, skipSuccessfulRequests }),
@@ -38,8 +39,9 @@ function limitersFor({ windowMs, perIp, perEmail }, { skipSuccessfulRequests = f
   ];
 }
 
-// Creates a router that applies rate limiting to the authentication routes. The limits can be customized by passing an object with the desired limits for sign-up, sign-in, and password reset. Each route is limited twice: once per IP address and once per email address, to prevent abuse while allowing legitimate users to access the service. The router uses express-rate-limit to enforce the limits and returns a standard error response when the limit is exceeded.
-export function createAuthRateLimiter(limits = DEFAULT_LIMITS) {
+// Limits can be overridden per route (the tests do this); anything left out keeps its default.
+export function createAuthRateLimiter(overrides = {}) {
+  const limits = { ...DEFAULT_LIMITS, ...overrides };
   const router = Router();
   const parseJson = express.json();
 
@@ -50,6 +52,11 @@ export function createAuthRateLimiter(limits = DEFAULT_LIMITS) {
     ...limitersFor(limits.signIn, { skipSuccessfulRequests: true }),
   );
   router.post('/api/auth/request-password-reset', parseJson, ...limitersFor(limits.passwordReset));
+  router.post(
+    '/api/auth/send-verification-email',
+    parseJson,
+    ...limitersFor(limits.verificationEmail),
+  );
 
   return router;
 }

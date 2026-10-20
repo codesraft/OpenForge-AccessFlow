@@ -1,4 +1,4 @@
-// This file defines the environment variables used in the test environment for the AuthAccKit server. It includes settings such as the server port, client URL, trusted origins, authentication URL and secret, production flag, cookie same-site policy, and the imgBB API key for image uploads. These variables are exported as an object named `env` for use in tests and other parts of the application that require access to these configuration values.
+// Fixed settings that replace utils/env.js in tests, so results never depend on a developer's .env.
 const clientUrl = 'http://localhost:3000';
 
 export const env = {
@@ -10,4 +10,6 @@ export const env = {
   isProduction: false,
   cookieSameSite: 'lax',
   imgbbApiKey: 'test-imgbb-key',
+  googleClientId: 'test-google-client-id',
+  googleClientSecret: 'test-google-client-secret',
 };

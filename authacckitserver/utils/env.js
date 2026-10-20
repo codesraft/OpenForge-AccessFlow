@@ -14,6 +14,18 @@ const extraTrustedOrigins = (process.env.TRUSTED_ORIGINS ?? '')
 
 const clientUrl = process.env.CLIENT_URL || DEFAULT_CLIENT_URL;
 
+const SAME_SITE_VALUES = ['lax', 'strict', 'none'];
+
+// The `readSameSite` function reads the `COOKIE_SAME_SITE` environment variable and validates its value. It defaults to 'none' in production and 'lax' in development. The function ensures that the value is one of the accepted options ('lax', 'strict', or 'none') and throws an error if it is not. This helps enforce proper cookie handling based on the environment, ensuring that cookies are used securely when necessary.
+function readSameSite() {
+  const value = (process.env.COOKIE_SAME_SITE || (isProduction ? 'none' : 'lax')).toLowerCase();
+
+  if (!SAME_SITE_VALUES.includes(value)) {
+    throw new Error(`COOKIE_SAME_SITE must be one of: ${SAME_SITE_VALUES.join(', ')}.`);
+  }
+  return value;
+}
+
 // Every setting is read here once, so the rest of the code never touches process.env.
 export const env = {
   port: Number(process.env.PORT) || DEFAULT_PORT,
@@ -26,6 +38,8 @@ export const env = {
   authUrl: process.env.BETTER_AUTH_URL || `http://localhost:${DEFAULT_PORT}`,
   isProduction,
   imgbbApiKey: process.env.IMGBB_API_KEY,
-  // The cookieSameSite setting determines how cookies are sent with cross-site requests. In production, it defaults to "none" to allow cross-site requests, while in development it defaults to "lax" to provide some protection against cross-site request forgery (CSRF) attacks. The value is converted to lowercase to ensure consistency when used in the application.
-  cookieSameSite: (process.env.COOKIE_SAME_SITE || (isProduction ? 'none' : 'lax')).toLowerCase(),
+  googleClientId: process.env.GOOGLE_CLIENT_ID,
+  googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  // Production defaults to "none" because the client and server live on different sites.
+  cookieSameSite: readSameSite(),
 };
