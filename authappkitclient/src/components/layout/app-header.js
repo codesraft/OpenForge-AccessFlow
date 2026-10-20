@@ -16,7 +16,8 @@ export function AppHeader() {
   async function logOut() {
     await runAuthRequest(() => authClient.signOut());
 
-    // Clear the query cache so that any cached data from the previous session is removed. This ensures that when the user logs out, they won't see any stale data from their previous session when they log back in or when another user logs in.
+    // Everything cached belongs to the person who just left, so none of it may be shown
+    // to the next person who logs in on this browser.
     queryClient.clear();
     router.replace(LOGIN_PATH);
   }
@@ -26,6 +27,7 @@ export function AppHeader() {
       <nav className="flex gap-4 text-sm font-medium">
         <Link href="/dashboard">Dashboard</Link>
         <Link href="/profile">Profile</Link>
+        <Link href="/security">Security</Link>
       </nav>
       <button type="button" onClick={logOut} className="text-sm font-medium underline">
         Log out

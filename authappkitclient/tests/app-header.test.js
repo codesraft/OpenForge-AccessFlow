@@ -22,6 +22,7 @@ describe('AppHeader', () => {
 
     expect(screen.getByRole('link', { name: 'Dashboard' }).getAttribute('href')).toBe('/dashboard');
     expect(screen.getByRole('link', { name: 'Profile' }).getAttribute('href')).toBe('/profile');
+    expect(screen.getByRole('link', { name: 'Security' }).getAttribute('href')).toBe('/security');
   });
 
   it('logs out, forgets cached data and goes to the login page', async () => {
