@@ -1,4 +1,4 @@
-// This module provides a utility function to detect the type of an image based on its binary signature. It supports JPEG, PNG, and WebP formats. The `detectImageType` function takes a buffer containing the image data and returns the corresponding MIME type as a string, or null if the image type is not recognized.
+// The type is read from the file's first bytes because the filename and Content-Type are chosen by the client.
 const SIGNATURES = [
   {
     type: 'image/jpeg',

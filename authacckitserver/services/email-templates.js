@@ -1,5 +1,3 @@
-// This file contains the email templates used by the server to send emails to users. The templates are used for verification emails and password reset emails. The templates are built using a common function that takes the subject, name, intro, action label, url, and outro as parameters and returns an object with the subject, text, and html properties.
-
 const APP_NAME = 'AuthAccKit';
 
 // The link and name end up inside HTML, so special characters are escaped first.

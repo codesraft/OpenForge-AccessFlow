@@ -1,7 +1,7 @@
 import { fromNodeHeaders } from 'better-auth/node';
 import { AppError } from '../utils/app-error.js';
 
-// This middleware checks that the request has a valid session and that the user's email is verified. It adds the user and session to the request object for later handlers to use.
+// The server is the real security boundary; the client-side route guard only improves the UI.
 export function createRequireAuth(auth) {
   return async function requireAuth(req, res, next) {
     const session = await auth.api.getSession({ headers: fromNodeHeaders(req.headers) });

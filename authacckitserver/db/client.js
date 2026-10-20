@@ -1,10 +1,10 @@
 import { MongoClient } from 'mongodb';
 import { env } from '../utils/env.js';
 
-// The MongoClient instance is created once and reused for all database operations. This avoids the overhead of creating a new connection for each request, which can be expensive and lead to resource exhaustion.
+// One shared client for the whole process: MongoDB manages its own connection pool.
 let client = null;
 
-// A promise that resolves when the connection is established, or rejects if it fails.
+// Remembers an attempt in progress, so simultaneous callers do not open two connections.
 let connecting = null;
 
 export function connectToDatabase() {

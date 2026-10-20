@@ -1,6 +1,6 @@
 import { AppError } from '../utils/app-error.js';
 
-// This function converts Zod validation issues into a simple object mapping field names to error messages. It is used to provide detailed feedback to the client about which fields are invalid.
+// Keeps one message per field, so a form can show each error next to its input.
 function toFieldMessages(issues) {
   const fields = {};
 
@@ -11,7 +11,7 @@ function toFieldMessages(issues) {
   return fields;
 }
 
-// This middleware validates the request body against a Zod schema. If the body is invalid, it throws an AppError with a 400 status and a list of field errors. If the body is valid, it replaces req.body with the parsed data and calls next().
+// Replaces req.body with the parsed result, so handlers only see fields the schema allows.
 export function validateBody(schema) {
   return function validate(req, res, next) {
     const result = schema.safeParse(req.body);

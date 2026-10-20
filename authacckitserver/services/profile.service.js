@@ -1,6 +1,6 @@
 import { getProfilesCollection } from '../db/collections.js';
 
-// The fields that users are allowed to change in their profile. Any other fields in the profile are managed by the server and cannot be changed by the user.
+// Only these fields may be changed by the user; everything else on the document is server-owned.
 const EDITABLE_FIELDS = ['avatarUrl', 'bio'];
 
 function pickEditableFields(changes) {
@@ -9,7 +9,7 @@ function pickEditableFields(changes) {
   );
 }
 
-// The profile is created on demand when the user first logs in, so it is guaranteed to exist after this function resolves. The profile is not created until the user logs in, so it is not possible to create a profile for a user that has never logged in.
+// Profiles are created lazily, so users who registered before this feature existed still get one.
 export function getOrCreateProfile(userId) {
   return getProfilesCollection().findOneAndUpdate(
     { userId },
@@ -33,7 +33,7 @@ export function deleteProfile(userId) {
   return getProfilesCollection().deleteOne({ userId });
 }
 
-// This function converts a user object and a profile object into a response object that can be sent to the client. It includes the user's name and email from the user object, and the avatarUrl, bio, and updatedAt fields from the profile object. This allows the client to display the user's profile information without exposing any sensitive data.
+// Builds the public shape of a profile, so internal fields such as userId never reach the client.
 export function toProfileResponse(user, profile) {
   return {
     name: user.name,

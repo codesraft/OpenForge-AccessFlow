@@ -4,7 +4,23 @@ import 'dotenv/config';
 const DEFAULT_PORT = 5000;
 const DEFAULT_CLIENT_URL = 'http://localhost:3000';
 
+const SAME_SITE_VALUES = ['lax', 'strict', 'none'];
+
+// Required environment variables in production. If any are missing, the server will not start.
+const REQUIRED_IN_PRODUCTION = [
+  'DATABASE_URL',
+  'BETTER_AUTH_SECRET',
+  'BETTER_AUTH_URL',
+  'CLIENT_URL',
+  'SMTP_URL',
+  'EMAIL_FROM',
+];
+
 const isProduction = process.env.NODE_ENV === 'production';
+
+export function findMissingVars(names, source = process.env) {
+  return names.filter((name) => !source[name]);
+}
 
 // Extra origins that may call the API (for example a preview deployment), comma separated.
 const extraTrustedOrigins = (process.env.TRUSTED_ORIGINS ?? '')
@@ -14,9 +30,7 @@ const extraTrustedOrigins = (process.env.TRUSTED_ORIGINS ?? '')
 
 const clientUrl = process.env.CLIENT_URL || DEFAULT_CLIENT_URL;
 
-const SAME_SITE_VALUES = ['lax', 'strict', 'none'];
-
-// The `readSameSite` function reads the `COOKIE_SAME_SITE` environment variable and validates its value. It defaults to 'none' in production and 'lax' in development. The function ensures that the value is one of the accepted options ('lax', 'strict', or 'none') and throws an error if it is not. This helps enforce proper cookie handling based on the environment, ensuring that cookies are used securely when necessary.
+// Production defaults to "none" because the client and server live on different sites.
 function readSameSite() {
   const value = (process.env.COOKIE_SAME_SITE || (isProduction ? 'none' : 'lax')).toLowerCase();
 
@@ -40,6 +54,6 @@ export const env = {
   imgbbApiKey: process.env.IMGBB_API_KEY,
   googleClientId: process.env.GOOGLE_CLIENT_ID,
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  // Production defaults to "none" because the client and server live on different sites.
   cookieSameSite: readSameSite(),
+  missingProductionVars: isProduction ? findMissingVars(REQUIRED_IN_PRODUCTION) : [],
 };

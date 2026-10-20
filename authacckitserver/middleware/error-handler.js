@@ -10,7 +10,6 @@ export function notFoundHandler(req, res) {
   sendError(res, 404, 'NOT_FOUND', 'The requested resource was not found.');
 }
 
-// The error handler is the last middleware, so it only sees errors that were not handled by the routes above. It logs unexpected errors and sends a generic message to the client, so internal details are never exposed.
 export function errorHandler(err, req, res, _next) {
   if (err instanceof AppError) {
     return sendError(res, err.status, err.code, err.message, err.details);

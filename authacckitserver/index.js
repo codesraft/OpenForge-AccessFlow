@@ -7,6 +7,11 @@ import { ensureIndexes } from './db/indexes.js';
 import { logger } from './utils/logger.js';
 
 async function start() {
+  if (env.missingProductionVars.length > 0) {
+    logger.error(`Missing environment variables: ${env.missingProductionVars.join(', ')}`);
+    process.exit(1);
+  }
+
   let auth;
   try {
     const db = await connectToDatabase();

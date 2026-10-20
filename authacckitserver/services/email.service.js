@@ -16,7 +16,7 @@ const SAFE_FAILURE_MESSAGE = 'We could not send the email. Please try again.';
 
 async function sendEmail({ to, subject, text, html }) {
   if (!env.smtpUrl || !env.emailFrom) {
-    // The email cannot be sent, but we do not want to leak the SMTP URL or the sender address in the error message. In development, we log the email instead of sending it, so developers can see what would have been sent.
+    // In development, the email is printed instead so the flow can be tested without an SMTP provider.
     if (!env.isProduction) {
       logger.info(
         `Email is not configured, so it was printed instead of sent.\nTo: ${to}\nSubject: ${subject}\n\n${text}`,

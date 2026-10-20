@@ -1,6 +1,5 @@
 import { COLLECTION_NAMES } from './collections.js';
 
-// Indexes that the server needs to create on startup. These are exported so tests can use them too.
 const INDEXES = [
   { collection: COLLECTION_NAMES.sessions, keys: { userId: 1 } },
   { collection: COLLECTION_NAMES.sessions, keys: { token: 1 }, options: { unique: true } },

@@ -4,7 +4,7 @@ import { AppError } from '../utils/app-error.js';
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
 const AVATAR_FIELD = 'avatar';
 
-// Multer is used to handle file uploads. It stores the uploaded files in memory and enforces a limit on the file size and number of files. The configuration specifies that only one file can be uploaded in the "avatar" field, and the maximum file size is 2 MB. If the upload exceeds these limits, Multer will throw an error, which is then converted into a standard AppError for consistent error handling.
+// Files stay in memory (no temp files on disk) and the size limit stops oversized uploads early.
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: MAX_AVATAR_BYTES, files: 1 },

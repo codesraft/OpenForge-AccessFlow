@@ -24,7 +24,7 @@ describe('validateBody', () => {
     expect(res.body.error.code).toBe('VALIDATION_ERROR');
     expect(res.body.error.details).toEqual({
       bio: 'Bio must be 300 characters or fewer.',
-      avatarUrl: 'Avatar must be a valid link.',
+      avatarUrl: 'Avatar must be a secure (https) link.',
     });
   });
 

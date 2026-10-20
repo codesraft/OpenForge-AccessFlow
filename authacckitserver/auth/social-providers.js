@@ -1,4 +1,4 @@
-// This file contains the configuration for social authentication providers, specifically Google in this case. The `getSocialProviders` function takes an object with Google client ID and secret, and returns a configuration object for the Google provider if both values are provided. If either value is missing, it returns an empty object, indicating that social authentication is not configured.
+// Google is only enabled when both credentials are set, so the kit runs without OAuth configured.
 export function getSocialProviders({ googleClientId, googleClientSecret }) {
   if (!googleClientId || !googleClientSecret) return {};
 
@@ -10,7 +10,7 @@ export function getSocialProviders({ googleClientId, googleClientSecret }) {
   };
 }
 
-// The account linking feature allows users to link multiple authentication methods (e.g., email/password and social providers) to a single account. The configuration object specifies whether account linking is enabled and whether implicit linking (automatic linking of accounts with the same email) is disabled.
+// Account linking is enabled by default, but can be disabled for testing or if the app does not want to support it. Implicit linking is disabled by default because it can be confusing for users, but can be enabled if the app wants to support it.
 export const ACCOUNT_LINKING = {
   enabled: true,
   disableImplicitLinking: true,

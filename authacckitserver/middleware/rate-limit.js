@@ -2,7 +2,7 @@ import express, { Router } from 'express';
 import { rateLimit, ipKeyGenerator, MINUTE, HOUR } from 'express-rate-limit';
 import { AppError } from '../utils/app-error.js';
 
-// The default rate limits for various authentication-related actions, such as signing in, signing up, requesting password resets, and sending verification emails. Each action has a specified time window and limits for requests per IP address and per email address. These limits help prevent abuse and ensure fair usage of the authentication system.
+// Each action is limited per IP and per email, so rotating IP addresses does not bypass the limit.
 const DEFAULT_LIMITS = {
   signIn: { windowMs: 15 * MINUTE, perIp: 20, perEmail: 5 },
   signUp: { windowMs: HOUR, perIp: 10, perEmail: 3 },

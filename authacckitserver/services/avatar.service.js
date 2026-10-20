@@ -6,7 +6,7 @@ const IMGBB_UPLOAD_URL = 'https://api.imgbb.com/1/upload';
 const UPLOAD_TIMEOUT_MS = 10_000;
 const FRIENDLY_ERROR = 'We could not upload your image. Please try again.';
 
-// Uploads the avatar image to imgBB and returns the URL of the uploaded image. It takes a buffer containing the image data, converts it to a base64 string, and sends it to the imgBB API using a POST request. The function handles errors by logging them and throwing an AppError with a user-friendly message. If the upload is successful, it returns the URL of the uploaded image.
+// imgBB is called from the server so the API key never reaches the browser.
 export async function uploadAvatarImage(imageBuffer) {
   try {
     if (!env.imgbbApiKey) {
