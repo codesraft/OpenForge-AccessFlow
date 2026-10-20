@@ -3,34 +3,48 @@ import { env } from './utils/env.js';
 import { closeDatabase } from './db/client.js';
 import { logger } from './utils/logger.js';
 
-async function start() {
-  if (env.missingProductionVars.length > 0) {
+let cachedApp = null;
+
+async function getApp() {
+  if (cachedApp) return cachedApp;
+
+  if (env.missingProductionVars && env.missingProductionVars.length > 0) {
     logger.error(`Missing environment variables: ${env.missingProductionVars.join(', ')}`);
-    process.exit(1);
+    throw new Error(`Missing environment variables: ${env.missingProductionVars.join(', ')}`);
   }
 
-  let app;
   try {
-    app = await createConfiguredApp();
+    cachedApp = await createConfiguredApp();
+    return cachedApp;
   } catch (error) {
-    // Without the database or auth config every request would fail, so stop right away.
     logger.error('Could not start the server:', error.message);
-    process.exit(1);
+    throw error;
   }
-
-  const server = app.listen(env.port, () => {
-    logger.info(`AuthAccKit server running on port ${env.port}`);
-  });
-
-  // Finish in-flight requests and release the database connection before exiting.
-  const shutdown = () => {
-    server.close(async () => {
-      await closeDatabase();
-      process.exit(0);
-    });
-  };
-  process.on('SIGINT', shutdown);
-  process.on('SIGTERM', shutdown);
 }
 
-start();
+// Local development server startup
+if (process.env.NODE_ENV !== 'production') {
+  getApp().then(app => {
+    const server = app.listen(env.port, () => {
+      logger.info(`AuthAccKit server running on port ${env.port}`);
+    });
+
+    const shutdown = () => {
+      server.close(async () => {
+        await closeDatabase();
+        process.exit(0);
+      });
+    };
+    process.on('SIGINT', shutdown);
+    process.on('SIGTERM', shutdown);
+  }).catch(err => {
+    console.error(err);
+    process.exit(1);
+  });
+}
+
+// Serverless export for Vercel
+export default async function handler(req, res) {
+  const app = await getApp();
+  return app(req, res);
+}
