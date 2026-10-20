@@ -121,4 +121,23 @@ describe('SessionsList', () => {
 
     expect(await screen.findByText('We could not reach the server.')).toBeDefined();
   });
+
+  it('shows five devices at first and the rest after asking for more', async () => {
+    const others = Array.from({ length: 6 }, (_, index) => ({
+      ...phone,
+      id: `extra-${index}`,
+      token: `tok-extra-${index}`,
+      ipAddress: `9.9.9.${index}`,
+    }));
+    apiFetch.mockResolvedValue([...others, laptop]);
+    renderList();
+
+    await screen.findByText('This device');
+    expect(screen.getAllByRole('listitem')).toHaveLength(5);
+
+    fireEvent.click(screen.getByRole('button', { name: /Show more devices \(2 hidden\)/ }));
+
+    expect(screen.getAllByRole('listitem')).toHaveLength(7);
+    expect(screen.queryByRole('button', { name: /Show more devices/ })).toBeNull();
+  });
 });
