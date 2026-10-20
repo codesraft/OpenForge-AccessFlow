@@ -46,6 +46,16 @@ describe('LoginForm', () => {
     expect(authClient.signIn.email).not.toHaveBeenCalled();
   });
 
+  it('shows a message straight away when a Google sign-in failed', () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <LoginForm initialError="You cancelled the sign-in with Google." />
+      </QueryClientProvider>,
+    );
+
+    expect(screen.getByRole('alert').textContent).toBe('You cancelled the sign-in with Google.');
+  });
+
   it('goes to the dashboard after a successful login', async () => {
     authClient.signIn.email.mockResolvedValue({ data: {}, error: null });
     renderForm();
@@ -79,7 +89,7 @@ describe('LoginForm', () => {
 
     clickButton('Log in');
 
-    expect(await screen.findByText('Invalid email or password')).toBeDefined();
+    expect(await screen.findByText('The email or password is not correct.')).toBeDefined();
     expect(replace).not.toHaveBeenCalled();
   });
 
@@ -121,6 +131,8 @@ describe('LoginForm', () => {
 
     clickButton('Log in');
 
-    expect(await screen.findByText('Too many attempts. Please try again later.')).toBeDefined();
+    expect(
+      await screen.findByText('Too many attempts. Please wait a few minutes and try again.'),
+    ).toBeDefined();
   });
 });

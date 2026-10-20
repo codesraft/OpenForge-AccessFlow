@@ -18,10 +18,11 @@ import { ResendVerificationButton } from './resend-verification-button';
 
 const AFTER_LOGIN_PATH = '/dashboard';
 
-export function LoginForm() {
+// The login form for the app. It handles user input, validation, and submission to the authentication API. If the login is successful, it clears any cached session data and redirects the user to the dashboard. If there are errors, it displays appropriate messages to the user.
+export function LoginForm({ initialError = null }) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [serverError, setServerError] = useState(null);
+  const [serverError, setServerError] = useState(initialError);
   const [unverifiedEmail, setUnverifiedEmail] = useState(null);
   const {
     register,
@@ -41,8 +42,7 @@ export function LoginForm() {
       return;
     }
 
-    // An earlier "nobody is logged in" answer may still be cached. Removing it makes the
-    // next page wait for a fresh answer instead of sending the user straight back here.
+    // The login was successful, so the session is now different. Forget any cached data that belonged to the previous session.
     queryClient.removeQueries({ queryKey: SESSION_QUERY_KEY });
     router.replace(AFTER_LOGIN_PATH);
   }

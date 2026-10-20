@@ -70,7 +70,9 @@ describe('RegisterForm', () => {
     clickButton('Create account');
 
     expect(await screen.findByRole('alert')).toBeDefined();
-    expect(screen.getByText('User already exists')).toBeDefined();
+    expect(
+      screen.getByText('An account with this email already exists. Try logging in instead.'),
+    ).toBeDefined();
     expect(screen.getByRole('button', { name: 'Create account' })).toBeDefined();
   });
 

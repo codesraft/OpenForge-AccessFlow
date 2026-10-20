@@ -75,7 +75,7 @@ describe('apiFetch', () => {
 
     await expect(apiFetch('/api/auth/revoke-session')).rejects.toMatchObject({
       code: 'SESSION_NOT_OWNED',
-      message: 'Not yours.',
+      message: 'You can only log out your own devices.',
     });
   });
 
@@ -85,7 +85,7 @@ describe('apiFetch', () => {
     await expect(apiFetch('/api/profile')).rejects.toMatchObject({
       status: 502,
       code: 'UNKNOWN_ERROR',
-      message: 'Something went wrong. Please try again.',
+      message: 'Something went wrong on our side. Please try again in a moment.',
     });
   });
 });

@@ -47,7 +47,9 @@ describe('ForgotPasswordForm', () => {
     fillIn('Email', 'sam@example.com');
     clickButton('Send reset link');
 
-    expect(await screen.findByText('Too many attempts. Please try again later.')).toBeDefined();
+    expect(
+      await screen.findByText('Too many attempts. Please wait a few minutes and try again.'),
+    ).toBeDefined();
   });
 });
 
@@ -90,6 +92,8 @@ describe('ResetPasswordForm', () => {
     fillIn('Confirm new password', 'a-brand-new-password-2');
     clickButton('Set new password');
 
-    expect(await screen.findByText('Invalid token')).toBeDefined();
+    expect(
+      await screen.findByText('This link is invalid or has expired. Please request a new one.'),
+    ).toBeDefined();
   });
 });

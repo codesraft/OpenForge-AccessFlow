@@ -1,9 +1,7 @@
 import { API_URL } from './config';
-import { NETWORK_ERROR_MESSAGE } from './auth-errors';
+import { NETWORK_ERROR_MESSAGE, getErrorMessage } from './auth-errors';
 
-const FALLBACK_MESSAGE = 'Something went wrong. Please try again.';
-
-// This class represents an error returned by the API. It extends the built-in Error class and adds properties for the HTTP status code and a specific error code returned by the API. This allows the client to handle different types of errors in a structured way, providing more context about what went wrong during an API request.
+// This class represents an error returned by the API. It extends the built-in Error class and adds two additional properties: status and code. The status property holds the HTTP status code of the response, while the code property holds a specific error code returned by the API. This allows for more detailed error handling in the client application, enabling developers to respond appropriately to different types of errors based on their status and code.
 export class ApiError extends Error {
   constructor(status, code, message) {
     super(message);
@@ -14,7 +12,7 @@ export class ApiError extends Error {
 }
 
 export async function apiFetch(path, options = {}) {
-  // FormData is used for file uploads, and the browser sets the content type itself (with a boundary) when sending FormData. If we set the content type to application/json, the server will not be able to parse the request.
+  // The body can be a FormData (for file uploads) or a JSON object. If it's a JSON object, we need to stringify it before sending it in the request. If it's a FormData, we leave it as is, because the browser will handle it automatically.
   const isFileUpload = options.body instanceof FormData;
   const hasJsonBody = options.body && !isFileUpload;
 
@@ -24,7 +22,7 @@ export async function apiFetch(path, options = {}) {
       ...options,
       // Without this the browser would not send the session cookie to the server.
       credentials: 'include',
-      // Only set the content type when there is a body and it is not a file upload. The browser sets the content type itself for file uploads, because it has to add the boundary that separates the parts of the form.
+      // The server expects JSON for most requests, so we set the content type here. If the body is a FormData (for file uploads), we don't set it, because the browser will handle it automatically.
       headers: hasJsonBody
         ? { 'Content-Type': 'application/json', ...options.headers }
         : options.headers,
@@ -40,10 +38,12 @@ export async function apiFetch(path, options = {}) {
   if (!response.ok) {
     // Better Auth's own routes answer with { code, message } and no "error" wrapper.
     const error = body?.error ?? body;
+    const status = response.status;
+
     throw new ApiError(
-      response.status,
+      status,
       error?.code ?? 'UNKNOWN_ERROR',
-      error?.message ?? FALLBACK_MESSAGE,
+      getErrorMessage({ status, code: error?.code, message: error?.message }),
     );
   }
 
